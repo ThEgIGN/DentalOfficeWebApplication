@@ -1,0 +1,172 @@
+package servlets;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import comparators.DateAndTimeStartComparator;
+import managers.AppointmentManager;
+import model.Appointment;
+import model.Patient;
+
+/**
+ * Servlet implementation class PatientsExistingAppointmentsServlet
+ */
+@WebServlet("/PatientsExistingAppointmentsServlet")
+public class PatientsExistingAppointmentsServlet extends HttpServlet {
+	private static final String TARGET = "/patients/checkAppointments.jsp";
+	private static final String MESSAGE_PARAM = "messagePatientAllAppointments";
+	private static final long serialVersionUID = 1L;
+	private static final String FILE_NAME = "\\deadline.txt";
+	private static final int DEFAULT_DEADLINE = 24;
+	private AppointmentManager appointmentManager;
+
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	// Get value from the file. This is the only way of doing this where I can write
+	// and read in the same way (using same path etc.)
+	private int getDeadlineValue() {
+		String path = getServletContext().getRealPath("/WEB-INF");
+		path += FILE_NAME;
+		File f = new File(path);
+		if (f.exists()) {
+			try {
+				BufferedReader reader = new BufferedReader(new FileReader(path));
+				String number = reader.readLine();
+				reader.close();
+				return Integer.parseInt(number);
+			} catch (IOException | NumberFormatException e) {
+				e.printStackTrace();
+				return 0;
+			}
+			// Just a little fail-safe in case file doesn't exist
+		} else {
+			changeDeadlineValue(DEFAULT_DEADLINE);
+			return DEFAULT_DEADLINE;
+		}
+	}
+
+	// Change value of current file
+	private boolean changeDeadlineValue(int newValue) {
+		String path = getServletContext().getRealPath("/WEB-INF");
+		path += FILE_NAME;
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+			writer.write(Integer.toString(newValue));
+			writer.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public PatientsExistingAppointmentsServlet() {
+		super();
+		appointmentManager = new AppointmentManager();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String messageValue = "";
+		Patient patient = (Patient) request.getSession().getAttribute("currentPatient");
+		String jmbg = patient.getJmbg();
+		List<Appointment> allAppointments = appointmentManager.getAllAppointmentsForJmbg(jmbg);
+
+		if (allAppointments != null && allAppointments.size() != 0) {
+			// Sort them by date and then by timeStart
+			List<Appointment> sortedAppointments = allAppointments.stream().sorted(new DateAndTimeStartComparator())
+					.collect(Collectors.toList());
+			request.getSession().setAttribute("patientAllAppointments", sortedAppointments);
+		} else {
+			messageValue = "You currently don't have any appointments at our Dental Office.";
+		}
+
+		request.setAttribute(MESSAGE_PARAM, messageValue);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(TARGET);
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	@SuppressWarnings("unchecked")
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String messageValue = "";
+		int appointmentListIndex = Integer.parseInt(request.getParameter("appointment"));
+		List<Appointment> appointmentsList = (List<Appointment>) request.getSession()
+				.getAttribute("patientAllAppointments");
+		Appointment appointment = appointmentsList.get(appointmentListIndex);
+
+		// Get deadline from file and compare 2 dates
+		int deadlineHours = getDeadlineValue();
+		// Get todays date
+		Date dateToday = new Date();
+		Date appointmentDate = appointment.getDate();
+		LocalTime appointmentTime = appointment.getTimeStart().toLocalTime();
+
+		// Combine date and time of appointment into one calendar object
+		Calendar calApp = Calendar.getInstance();
+		calApp.setTime(appointmentDate);
+		Calendar cal = Calendar.getInstance();
+		cal.set(calApp.get(Calendar.YEAR), calApp.get(Calendar.MONTH), calApp.get(Calendar.DAY_OF_MONTH),
+				appointmentTime.getHour(), appointmentTime.getMinute(), 0);
+		// Deduct deadline hours from it
+		cal.add(Calendar.HOUR_OF_DAY, -deadlineHours);
+		Date completeAppointmentDate = cal.getTime();
+		boolean checkDates = dateToday.before(completeAppointmentDate);
+
+		// If there's still time until deadline, proceed with deletion
+		if (checkDates) {
+			boolean deleteCheck = appointmentManager.removeAppointment(appointment);
+			if (deleteCheck) {
+				appointmentsList.remove(appointmentListIndex);
+				request.getSession().setAttribute("patientAllAppointments", appointmentsList);
+				forwardResponseWithMessage(request, response, MESSAGE_PARAM,
+						"Successfully canceled requested appointment.", TARGET);
+			} else {
+				forwardResponseWithMessage(request, response, MESSAGE_PARAM,
+						"Error occured while trying to delete appointment. Please try again.", TARGET);
+			}
+		} else {
+			forwardResponseWithMessage(request, response, MESSAGE_PARAM,
+					"Sorry, but you can't cancel that appointment, since deadline of " + deadlineHours
+							+ " hours has passed.",
+					TARGET);
+		}
+
+		request.setAttribute(MESSAGE_PARAM, messageValue);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(TARGET);
+		rd.forward(request, response);
+	}
+
+}

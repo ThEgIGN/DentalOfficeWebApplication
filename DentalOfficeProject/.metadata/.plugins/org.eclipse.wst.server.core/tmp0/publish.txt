@@ -1,0 +1,3 @@
+#Tomcat publish data
+#Fri Jun 16 13:47:59 CEST 2023
+org.eclipse.jst.j2ee.server\:DentalOfficeJPA=WEB-INF/lib/DentalOfficeJPA-0.0.1-SNAPSHOT.jar

@@ -1,0 +1,13 @@
+package comparators;
+
+import model.Appointment;
+
+public class DateAndTimeStartComparator implements Comparable<Appointment> {
+
+	@Override
+	public int compareTo(Appointment o) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

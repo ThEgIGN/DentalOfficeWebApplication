@@ -1,0 +1,87 @@
+package servlets;
+
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import managers.DentistManager;
+import model.Dentist;
+
+/**
+ * Servlet implementation class GetExistingDentistServlet
+ */
+@WebServlet("/GetExistingDentistServlet")
+public class GetExistingDentistServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private DentistManager dentistManager;
+	private Dentist dentist;
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public GetExistingDentistServlet() {
+		super();
+		dentistManager = new DentistManager();
+	}
+	
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	private void forwardResponseWithPatient(HttpServletRequest request, HttpServletResponse response, String target)
+			throws ServletException, IOException {
+		request.getSession().setAttribute("currentDentist", dentist);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			String jmbg = request.getParameter("jmbg");
+			if (jmbg != null && !jmbg.isBlank()) {
+				dentist = dentistManager.getFirstDentist();
+				// If Manager returned null for some reason, let user know. Else, proceed with
+				// creating appointment
+				if (dentist == null) {
+					forwardResponseWithMessage(request, response, "messageCreatePatient",
+							"It appears we don't have your profile saved. Please use other form to create new profile.",
+							"/dentists/loginDentist.jsp");
+				} else {
+					request.setAttribute("patientFirstName", patient.getFirstName());
+					request.setAttribute("patientLastName", patient.getLastName());
+					forwardResponseWithPatient(request, response, "/patients/patientChoice.jsp");
+				}
+			} else {
+				forwardResponseWithMessage(request, response, "messageCreatePatient", "Please fill out required field.",
+						"/dentists/loginDentist.jsp");
+			}
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+			forwardResponseWithMessage(request, response, "errorMessage",
+					"Something went wrong. Please contact your administrator for further help.", "/error.jsp");
+		}
+	}
+
+}

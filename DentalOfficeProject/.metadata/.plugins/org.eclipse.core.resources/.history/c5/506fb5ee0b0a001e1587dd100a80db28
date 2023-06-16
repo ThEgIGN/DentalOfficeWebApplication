@@ -1,0 +1,17 @@
+package managers;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+
+import model.Appointment;
+
+public class AppointmentManager {
+
+	public List<Appointment> getAllAppointmentsForDate(Date date, int length) {
+		EntityManager em =JPAUtil.getEntityManager();
+		return em.createQuery("select a from Appointment a where a.", Appointment.class).getResultList();
+	}
+	
+}

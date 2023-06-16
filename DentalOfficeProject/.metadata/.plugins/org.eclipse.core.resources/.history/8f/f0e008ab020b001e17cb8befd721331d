@@ -1,0 +1,70 @@
+package servlets;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet implementation class ChangeExistingDeadlineServlet
+ */
+@WebServlet("/ChangeExistingDeadlineServlet")
+public class ChangeExistingDeadlineServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private static final String FILE_NAME = "\\deadline.txt";
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public ChangeExistingDeadlineServlet() {
+		super();
+	}
+	
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	// Change value of current file
+	private boolean changeDeadlineValue(int newValue) {
+		String path = getServletContext().getRealPath("/WEB-INF");
+		path += FILE_NAME;
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+			writer.write(Integer.toString(newValue));
+			writer.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String hoursString = request.getParameter("hours");
+		if (jmbg != null && !jmbg.isBlank()) {
+	}
+
+}

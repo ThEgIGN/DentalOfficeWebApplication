@@ -1,0 +1,110 @@
+package servlets;
+
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import managers.PatientManager;
+import model.Patient;
+
+/**
+ * Servlet implementation class CreatePatientServlet
+ */
+@WebServlet("/CreatePatientServlet")
+public class CreatePatientServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private PatientManager patientManager;
+	private Patient patient;
+
+	// Check if required params (all but phone number) are not empty
+	private boolean checkParams(String[] params) {
+		for (String p : params) {
+			if (p == null || p.isBlank()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	private void forwardResponseWithPatient(HttpServletRequest request, HttpServletResponse response, String target)
+			throws ServletException, IOException {
+		request.getSession().setAttribute("currentPatient", patient);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public CreatePatientServlet() {
+		super();
+		patientManager = new PatientManager();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			String targetJSP = request.getParameter("targetJSP");
+			String jmbg = request.getParameter("jmbg");
+			String firstName = request.getParameter("firstName");
+			String lastName = request.getParameter("lastName");
+			String email = request.getParameter("email");
+			String phoneNumber = request.getParameter("phoneNumber");
+			String[] params = { firstName, lastName, email, jmbg };
+			boolean checkParams = checkParams(params);
+			// If every needed params isn't blank, proceed
+			if (checkParams) {
+				// Make sure that user with same JMBG isn't being created
+				Patient tempPatient = patientManager.findPatientByJmbg(jmbg);
+				if (tempPatient == null) {
+					patient = patientManager.addPatient(firstName, lastName, jmbg, email, phoneNumber);
+					// If Manager returned null for some reason, let user know. Else, proceed with
+					// patient choice
+					if (patient == null) {
+						forwardResponseWithMessage(request, response, "messageCreatePatient",
+								"Unexpected error occured while creating your profile.", "/patients/createPatient.jsp");
+					} else {
+						forwardResponseWithPatient(request, response, "/patients/patientChoice.jsp");
+					}
+				} else {
+					forwardResponseWithMessage(request, response, "messageCreatePatient",
+							"It appears profile with entered JMBG already exists in our database.",
+							"/patients/createPatient.jsp");
+				}
+			} else {
+				forwardResponseWithMessage(request, response, "messageCreatePatient",
+						"Please fill out all the required fields.", "/patients/createPatient.jsp");
+			}
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+			forwardResponseWithMessage(request, response, "errorMessage",
+					"Something went wrong. Please contact your administrator for further help.", "/error.jsp");
+		}
+	}
+
+}

@@ -1,0 +1,80 @@
+package servlets;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import helperClasses.AppointmentHelper;
+import model.Appointment;
+
+/**
+ * Servlet implementation class DentistDeleteAppointmentServlet
+ */
+@WebServlet("/DentistDeleteAppointmentServlet")
+public class DentistDeleteAppointmentServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private AppointmentHelper appointmentHelper;
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public DentistDeleteAppointmentServlet() {
+		super();
+		appointmentHelper = new AppointmentHelper();
+	}
+
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	@SuppressWarnings("unchecked")
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			int outerCounter = Integer.parseInt(request.getParameter("outerCounter"));
+			int innerCounter = Integer.parseInt(request.getParameter("innerCounter"));
+			List<List<Appointment>> listOfAppointmentsForDates = (List<List<Appointment>>) request.getSession()
+					.getAttribute("dentistAllAppointments");
+			Object[] result = appointmentHelper.removeAnAppointmentFromListOfLists(listOfAppointmentsForDates,
+					innerCounter, outerCounter);
+			boolean deleteCheck = (boolean) result[0];
+			if (deleteCheck) {
+				listOfAppointmentsForDates = (List<List<Appointment>>) result[1];
+				request.getSession().setAttribute("dentistAllAppointments", listOfAppointmentsForDates);
+				forwardResponseWithMessage(request, response, "messageDentistCalendar",
+						"Successfully canceled requested appointment.", "/dentists/dentistCalendar.jsp");
+			} else {
+				forwardResponseWithMessage(request, response, "messageDentistCalendar",
+						"Error occured while trying to delete selected appointment. Please try again.",
+						"/dentists/dentistCalendar.jsp");
+			}
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+			forwardResponseWithMessage(request, response, "errorMessage",
+					"Something went wrong. Please contact your administrator for further help.", "/error.jsp");
+		}
+	}
+
+}

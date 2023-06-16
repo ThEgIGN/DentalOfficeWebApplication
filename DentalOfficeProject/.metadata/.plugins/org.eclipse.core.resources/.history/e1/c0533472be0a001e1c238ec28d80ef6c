@@ -1,0 +1,18 @@
+package file;
+
+import java.io.FileWriter;
+
+public class AppointmentDeadlineReader {
+	
+	public static final String FILE_NAME = "deadline.txt";
+	
+	public boolean changeDeadlineValue(int newValue) {
+		BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME));
+	    writer.write(newValue);
+	    
+	    writer.close();
+	    return true;
+		return false;
+	}
+
+}

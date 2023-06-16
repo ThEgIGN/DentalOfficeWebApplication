@@ -1,0 +1,66 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Dental Office - New Appointment</title>
+</head>
+<body>
+	<c:if test="${!empty currentPatient}">
+		<form action="/DentalOfficeWEB/AvailableAppointmentsServlet"
+			method="get">
+			<table>
+				<tr>
+					<td>Appointment date</td>
+					<td><input type="date" name="dateAppointment"></td>
+				</tr>
+				<tr>
+					<td>Length</td>
+					<td><select name="length"><option value=30>30</option>
+							<option value=60>60</option></select></td>
+				</tr>
+				<tr>
+					<td><input type="submit" value="Show Appointments"></td>
+				</tr>
+			</table>
+		</form>
+	</c:if>
+	<c:if test="${!empty availableAppointments}">
+		<br>
+		<h3>Showing appointments for the date ${appointmentsDate} and
+			length of ${appointmentsLength} minutes</h3>
+		<table border="1">
+			<tr>
+				<th>Starting time</th>
+				<th>Ending time</th>
+				<th>Dentist</th>
+				<th>Make an appointment</th>
+			</tr>
+			<c:forEach items="${availableAppointments}" var="a" varStatus="counter">
+				<tr>
+					<td>${a.timeStart}</td>
+					<td>${a.timeEnd}</td>
+					<td>${a.dentist.firstName} ${a.dentist.lastName}</td>
+					<c:choose>
+						<c:when test="${empty a.patient.patientId}">
+							<td><form action="/DentalOfficeWEB/AvailableAppointmentsServlet"
+								method="post">
+								Reason for visit: <input type="text" name="reasonForVisit">
+								<input type="hidden" name="appointment" value="${counter.index}">  
+								<button type="submit">Reserve</button>
+							</form></td>
+						</c:when>
+						<c:otherwise>
+							<td>Already reserved</td>
+						</c:otherwise>
+					</c:choose>
+				</tr>
+			</c:forEach>
+		</table>
+	</c:if>
+	<br>
+	${appointmentInfoMessage}
+</body>
+</html>

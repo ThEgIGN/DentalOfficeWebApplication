@@ -1,0 +1,13 @@
+package managers;
+
+import javax.persistence.EntityManager;
+
+import model.Dentist;
+
+public class DentistManager {
+	
+	public Dentist getFirstDentist() {
+		EntityManager em = JPAUtil.getEntityManager();
+	}
+
+}

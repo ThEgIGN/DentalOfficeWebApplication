@@ -1,0 +1,12 @@
+package file;
+
+public class AppointmentDeadlineReader {
+	
+	public static final String FILE_NAME = "deadline.txt";
+	
+	public boolean changeDeadlineValue(int newValue) {
+		
+		return false;
+	}
+
+}

@@ -1,0 +1,41 @@
+1686676592893	Delete element
+1686760561472	Delete element
+1686760804811	Delete element
+1686760810143	Delete element
+1686762915310	Delete element
+1686764116943	Delete element
+1686764120632	Delete element
+1686827771631	Delete element
+1686840673362	Delete element
+1686841949637	Rename type 'DoctorAvailableAppointmentsServlet'
+1686845187279	Rename field 'begginingHour'
+1686845196469	Rename field 'endHour'
+1686845203013	Rename field 'minutes'
+1686849213865	Rename package 'helperMethods'
+1686849719619	Extract constant 'TARGET'
+1686850043018	Extract constant 'MESSAGE_PARAM'
+1686850883220	Extract constant 'MESSAGE_PARAM'
+1686850897494	Extract constant 'TARGET'
+1686851088183	Extract constant 'MESSAGE_PARAM'
+1686851541657	Extract constant 'MESSAGE_PARAM'
+1686851556540	Extract constant 'TARGET'
+1686851706832	Extract constant 'MESSAGE_PARAM'
+1686851962063	Extract constant 'TARGET'
+1686852126932	Extract constant 'MESSAGE_PARAM'
+1686852136700	Extract constant 'TARGET'
+1686852228476	Extract constant 'MESSAGE_PARAM'
+1686852478512	Extract constant 'MESSAGE_PARAM'
+1686852977046	Extract constant 'MESSAGE_PARAM'
+1686852991341	Extract constant 'TARGET'
+1686854945233	Move compilation unit
+1686854957259	Move compilation unit
+1686854969109	Move compilation unit
+1686854977539	Move compilation unit
+1686854988894	Move compilation unit
+1686855010143	Move compilation unit
+1686855056098	Move compilation unit
+1686855062641	Move compilation unit
+1686855067559	Move compilation unit
+1686855071560	Delete element
+1686855722979	Delete element
+1686909918994	Delete element

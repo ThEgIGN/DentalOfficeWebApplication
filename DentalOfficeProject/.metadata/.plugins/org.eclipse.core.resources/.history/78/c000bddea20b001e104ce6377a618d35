@@ -1,0 +1,123 @@
+package servlets;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import helperClasses.AppointmentHelper;
+import model.Appointment;
+import model.Patient;
+
+/**
+ * Servlet implementation class AvailableAppointmentsServlet
+ */
+@WebServlet("/AvailableAppointmentsServlet")
+public class AvailableAppointmentsServlet extends HttpServlet {
+	private static final String MESSAGE_PARAM = "appointmentInfoMessage";
+	private static final String TARGET = "/patients/createAppointment.jsp";
+	private static final long serialVersionUID = 1L;
+	private AppointmentHelper appointmentHelper;
+
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public AvailableAppointmentsServlet() {
+		super();
+		appointmentHelper = new AppointmentHelper();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String messageValue = "";
+		try {
+			String dateAppointmentString = request.getParameter("dateAppointment");
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			Date dateAppointment = null;
+			Date dateToday = new Date();
+			if (dateAppointmentString != null && !dateAppointmentString.isBlank()) {
+				try {
+					dateAppointment = sdf.parse(dateAppointmentString);
+				} catch (ParseException e) {
+					e.printStackTrace();
+					// Unreachable (in Firefox at least), so no need to put any message here
+				}
+				boolean checkDate = dateAppointment.after(dateToday);
+				if (checkDate) {
+					// Add list and date to session for later use and send it in response
+					List<Appointment> list = appointmentHelper.createListWithAllAppointmentsForDate(dateAppointment);
+					request.getSession().setAttribute("patientAvailableAppointments", list);
+					request.getSession().setAttribute("patientAppointmentsDate", dateAppointmentString);
+				} else {
+					// If user attempts to make an appointment today or before today
+					messageValue = "Appointments not available for selected date. Please select any date after today.";
+				}
+			} else {
+				messageValue = "Please select valid date.";
+			}
+		} catch (ServletException | IOException e) {
+			messageValue = "Something went wrong. Please contact your administrator for further help.";
+		} finally {
+			request.setAttribute(MESSAGE_PARAM, messageValue);
+			RequestDispatcher rd = request.getServletContext().getRequestDispatcher(TARGET);
+			rd.forward(request, response);
+		}
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	@SuppressWarnings("unchecked")
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			// Grab reason and length params and also grab list and patient from current
+			// session
+			int length = Integer.parseInt(request.getParameter("length"));
+			String reasonForVisit = request.getParameter("reasonForVisit");
+			Patient patient = (Patient) request.getSession().getAttribute("currentPatient");
+			int appointmentListIndex = Integer.parseInt(request.getParameter("appointment"));
+			List<Appointment> appointmentsList = (List<Appointment>) request.getSession()
+					.getAttribute("patientAvailableAppointments");
+			Object[] result = appointmentHelper.makeAnAppointment(length, reasonForVisit, patient, appointmentListIndex,
+					appointmentsList);
+			boolean checkAppointment = (boolean) result[0];
+
+			if (checkAppointment) {
+				List<Appointment> updatedAppointments = (List<Appointment>) result[1];
+				request.getSession().setAttribute("patientAvailableAppointments", updatedAppointments);
+				String dateOfAnAppointment = (String) request.getSession().getAttribute("patientAppointmentsDate");
+				forwardResponseWithMessage(request, response, MESSAGE_PARAM,
+						"Succesfully made an appointment for " + dateOfAnAppointment + ". See you soon!", TARGET);
+			} else {
+				forwardResponseWithMessage(request, response, MESSAGE_PARAM,
+						"You attempted to make an appointment within invalid time frame.", TARGET);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			forwardResponseWithMessage(request, response, "errorMessage",
+					"Something went wrong. Please contact your administrator for further help.", "/error.jsp");
+		}
+	}
+
+}

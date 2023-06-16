@@ -1,0 +1,90 @@
+package servlets;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import helperMethods.AppointmentHelper;
+import model.Appointment;
+
+/**
+ * Servlet implementation class DoctorAvailableAppointmentsServlet
+ */
+@WebServlet("/DoctorAvailableAppointmentsServlet")
+public class DoctorAvailableAppointmentsServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private AppointmentHelper appointmentHelper;
+
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public DoctorAvailableAppointmentsServlet() {
+		super();
+		appointmentHelper = new AppointmentHelper();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String dateAppointmentString = request.getParameter("dateAppointment");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date dateAppointment = null;
+		String calendarLenght = request.getParameter("lengthCalendar");
+		if (dateAppointmentString != null && !dateAppointmentString.isBlank()) {
+			try {
+				dateAppointment = sdf.parse(dateAppointmentString);
+			} catch (ParseException e) {
+				e.printStackTrace();
+				forwardResponseWithMessage(request, response, "appointmentInfoMessage", "Please select valid date.",
+						"/dentists/dentistCalendar.jsp");
+			}
+			// Add number of appointments based on week (7) or day(1)
+			List<List<Appointment>> listOfAppointmentsForDates = new ArrayList<>();
+			if (calendarLenght.equals("week")) {
+				for (int i = 0; i < 7; i++) {
+					listOfAppointmentsForDates
+							.add(appointmentHelper.createListWithAllAppointmentsForDate(dateAppointment));
+					dateAppointment = new Date(dateAppointment.getTime() + 24 * 60 * 60);
+				}
+			} else {
+				listOfAppointmentsForDates.add(appointmentHelper.createListWithAllAppointmentsForDate(dateAppointment));
+			}
+			request.getSession().setAttribute("dentistAllAppointments", listOfAppointmentsForDates);
+			RequestDispatcher rd = request.getServletContext().getRequestDispatcher("/dentists/dentistCalendar.jsp");
+			rd.forward(request, response);
+		} else {
+			forwardResponseWithMessage(request, response, "appointmentInfoMessage", "Please select valid date.",
+					"/dentists/dentistCalendar.jsp");
+		}
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+	}
+
+}

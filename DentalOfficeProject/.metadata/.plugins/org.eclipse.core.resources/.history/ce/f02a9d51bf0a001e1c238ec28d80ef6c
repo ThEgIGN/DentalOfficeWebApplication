@@ -1,0 +1,37 @@
+package file;
+
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.BufferedReader;
+
+public class AppointmentDeadlineReader {
+
+	public static final String FILE_NAME = "res/deadline.txt";
+
+	public boolean changeDeadlineValue(int newValue) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME));
+			writer.write(newValue);
+			writer.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public int getDeadlineValue() {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME));
+			String number = reader.readLine();
+			return Integer.parseInt(number);
+		} catch (IOException | NumberFormatException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+}

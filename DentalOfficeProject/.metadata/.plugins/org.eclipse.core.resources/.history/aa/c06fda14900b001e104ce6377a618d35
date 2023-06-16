@@ -1,0 +1,65 @@
+package servlets;
+
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import helperMethods.AppointmentHelper;
+
+/**
+ * Servlet implementation class DentistCreateAppointmentServlet
+ */
+@WebServlet("/DentistCreateAppointmentServlet")
+public class DentistCreateAppointmentServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private AppointmentHelper appointmentHelper;
+
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public DentistCreateAppointmentServlet() {
+		super();
+		appointmentHelper = new AppointmentHelper();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		// Grab reason and length params and also grab list and patient from current
+		// session
+		int length = Integer.parseInt(request.getParameter("length"));
+		String reasonForVisit = request.getParameter("reasonForVisit");
+		String jmbg = request.getParameter("jmbg");
+		if (jmbg != null && !jmbg.isBlank()) {
+			
+		} else {
+			forwardResponseWithMessage(request, response, "messageLoginDentist", "Please fill out JMBG field.",
+					"/dentists/loginDentist.jsp");
+		}
+	}
+
+}

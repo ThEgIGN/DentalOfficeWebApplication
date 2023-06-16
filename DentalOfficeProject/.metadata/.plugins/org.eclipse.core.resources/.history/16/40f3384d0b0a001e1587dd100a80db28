@@ -1,0 +1,14 @@
+package managers;
+
+import java.util.Date;
+import java.util.List;
+
+import model.Appointment;
+
+public class AppointmentManager {
+
+	public List<Appointment> getAllAppointments(Date date, int length) {
+		return null;
+	}
+	
+}

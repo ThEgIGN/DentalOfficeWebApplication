@@ -1,0 +1,18 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Please choose what you need</title>
+</head>
+<body>
+	<h3>Welcome ${patientFirstName} ${patientLastName}. You can make an appointment or check your existing ones.</h3>
+	<form action="./patients/createAppointment.jsp">
+         <button type="submit">Create appointment</button>
+    </form>
+    <form action="/DentalOfficeWEB/PatientsExistingAppointmentsServlet" method="get">
+         <button type="submit">Check existing appointments</button>
+    </form>
+</body>
+</html>

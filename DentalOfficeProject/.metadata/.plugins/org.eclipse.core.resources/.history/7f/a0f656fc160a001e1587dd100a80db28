@@ -1,0 +1,16 @@
+package managers;
+
+import java.util.List;
+import javax.persistence.EntityManager;
+
+import model.Dentist;
+
+public class DentistManager {
+
+	public Dentist getFirstDentist() {
+		EntityManager em = JPAUtil.getEntityManager();
+		List<Dentist> list = em.createQuery("select d from Dentist d where d.dentistId = 1", Dentist.class)
+				.getResultList();
+	}
+
+}

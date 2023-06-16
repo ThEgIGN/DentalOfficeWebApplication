@@ -1,0 +1,16 @@
+content_assist_lru_history=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><history maxLHS\="100" maxRHS\="10"><lhs name\="java.util.Date"><rhs name\="java.sql.Time"/><rhs name\="java.util.Date"/></lhs><lhs name\="java.lang.Cloneable"><rhs name\="java.sql.Time"/><rhs name\="java.util.Date"/></lhs><lhs name\="java.sql.Time"><rhs name\="java.sql.Time"/></lhs><lhs name\="managers.AppointmentManager"><rhs name\="managers.AppointmentManager"/></lhs><lhs name\="java.util.Collection"><rhs name\="java.util.ArrayList"/></lhs><lhs name\="java.lang.Iterable"><rhs name\="java.util.ArrayList"/></lhs><lhs name\="java.util.List"><rhs name\="java.util.ArrayList"/></lhs><lhs name\="model.Appointment"><rhs name\="model.Appointment"/></lhs><lhs name\="managers.DentistManager"><rhs name\="managers.DentistManager"/></lhs><lhs name\="file.AppointmentDeadlineReader"><rhs name\="file.AppointmentDeadlineReader"/></lhs><lhs name\="java.util.Comparator"><rhs name\="comparators.DateAndTimeStartComparator"/></lhs><lhs name\="java.time.temporal.Temporal"><rhs name\="java.time.LocalDate"/></lhs><lhs name\="java.time.temporal.TemporalAccessor"><rhs name\="java.time.LocalDate"/></lhs><lhs name\="java.time.temporal.TemporalAdjuster"><rhs name\="java.time.LocalDate"/></lhs><lhs name\="java.time.chrono.ChronoLocalDate"><rhs name\="java.time.LocalDate"/></lhs><lhs name\="helperMethods.AppointmentHelper"><rhs name\="helperMethods.AppointmentHelper"/></lhs><lhs name\="managers.PatientManager"><rhs name\="managers.PatientManager"/></lhs><lhs name\="java.lang.CharSequence"><rhs name\="java.lang.StringBuilder"/></lhs><lhs name\="java.lang.AbstractStringBuilder"><rhs name\="java.lang.StringBuilder"/></lhs><lhs name\="java.lang.Appendable"><rhs name\="java.lang.StringBuilder"/></lhs><lhs name\="helperClasses.AppointmentHelper"><rhs name\="helperClasses.AppointmentHelper"/></lhs></history>
+content_assist_number_of_computers=17
+content_assist_proposals_background=255,255,255
+content_assist_proposals_foreground=0,0,0
+eclipse.preferences.version=1
+org.eclipse.jdt.internal.ui.navigator.layout=2
+org.eclipse.jdt.internal.ui.navigator.librariesnode=true
+org.eclipse.jdt.ui.exception.name=e
+org.eclipse.jdt.ui.formatterprofiles.version=23
+org.eclipse.jdt.ui.gettersetter.use.is=true
+org.eclipse.jdt.ui.overrideannotation=true
+sourceHoverBackgroundColor=255,255,225
+spelling_locale_initialized=true
+typefilter_migrated_2=true
+useAnnotationsPrefPage=true
+useQuickDiffPrefPage=true

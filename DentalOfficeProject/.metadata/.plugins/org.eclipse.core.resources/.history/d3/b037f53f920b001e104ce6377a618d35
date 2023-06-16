@@ -1,0 +1,104 @@
+package servlets;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import helperMethods.AppointmentHelper;
+import managers.PatientManager;
+import model.Appointment;
+import model.Patient;
+
+/**
+ * Servlet implementation class DentistCreateAppointmentServlet
+ */
+@WebServlet("/DentistCreateAppointmentServlet")
+public class DentistCreateAppointmentServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	private AppointmentHelper appointmentHelper;
+	private Patient patient;
+	private PatientManager patientManager;
+
+	private void forwardResponseWithMessage(HttpServletRequest request, HttpServletResponse response,
+			String messageParam, String message, String target) throws ServletException, IOException {
+		request.setAttribute(messageParam, message);
+		RequestDispatcher rd = request.getServletContext().getRequestDispatcher(target);
+		rd.forward(request, response);
+	}
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public DentistCreateAppointmentServlet() {
+		super();
+		appointmentHelper = new AppointmentHelper();
+		patientManager = new PatientManager();
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
+	 */
+	@SuppressWarnings("unchecked")
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		// Try to find patient with entered jmbg
+		String jmbg = request.getParameter("jmbg");
+		if (jmbg != null && !jmbg.isBlank()) {
+			patient = patientManager.findPatientByJmbg(jmbg);
+			if (patient != null) {
+				// Grab reason,length and indexes params and also grab list of lists from
+				// current session
+				int length = Integer.parseInt(request.getParameter("length"));
+				String reasonForVisit = request.getParameter("reasonForVisit");
+				int outerCounter = Integer.parseInt(request.getParameter("outerCounter"));
+				int innerCounter = Integer.parseInt(request.getParameter("innerCounter"));
+				// Using outer and inner index, grab specific inner list and send it to helper
+				// method along with related index
+				List<List<Appointment>> listOfAppointmentsForDates = (List<List<Appointment>>) request.getSession()
+						.getAttribute("dentistAllAppointments");
+				List<Appointment> appointmentsList = listOfAppointmentsForDates.get(outerCounter);
+				Object[] result = appointmentHelper.makeAnAppointment(length, reasonForVisit, patient, innerCounter,
+						appointmentsList);
+				boolean checkAppointment = (boolean) result[0];
+
+				if (checkAppointment) {
+					// Update outer list with freshly updated inner list
+					List<Appointment> updatedAppointments = (List<Appointment>) result[1];
+					listOfAppointmentsForDates.set(outerCounter, updatedAppointments);
+					request.getSession().setAttribute("dentistAllAppointments", listOfAppointmentsForDates);
+					forwardResponseWithMessage(request, response, "messageAddNewAppointment",
+							"Succesfully made an appointment for patient " + patient.getFirstName() + " "
+									+ patient.getLastName() + ".",
+							"/dentists/dentistCalendar.jsp");
+				} else {
+					forwardResponseWithMessage(request, response, "messageAddNewAppointment",
+							"You attempted to make an appointment within invalid time frame.",
+							"/dentists/dentistCalendar.jsp");
+				}
+			} else {
+				forwardResponseWithMessage(request, response, "messageAddNewAppointment",
+						"There's no patient with entered JMBG.", "/dentists/dentistCalendar.jsp");
+			}
+		} else {
+			forwardResponseWithMessage(request, response, "messageAddNewAppointment", "Please fill out JMBG field.",
+					"/dentists/dentistCalendar.jsp");
+		}
+	}
+
+}

@@ -1,0 +1,128 @@
+package helperMethods;
+
+import java.sql.Time;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import managers.AppointmentManager;
+import managers.DentistManager;
+import model.Appointment;
+import model.Dentist;
+import model.Patient;
+
+public class AppointmentHelper {
+
+	private AppointmentManager appointmentManager;
+	private static final int BEGGINING_HOUR = 9;
+	private static final int END_HOUR = 17;
+	private static final int MINUTES = 30;
+
+	public AppointmentHelper() {
+		this.appointmentManager = new AppointmentManager();
+	}
+
+	@SuppressWarnings("deprecation")
+	public List<Appointment> createListWithAllAppointmentsForDate(Date date) {
+		// List with all appointments who have patients added to them
+		List<Appointment> currentAppointmentsForDate = appointmentManager.getAllAppointmentsForDate(date);
+		List<Appointment> listWithAllAppointments = new ArrayList<>();
+
+		// Create array with times from begginHour to endHour in increment of minutes
+		LocalTime timeStartLocal = LocalTime.of(BEGGINING_HOUR, 0, 0);
+		int sizeOfArray = ((END_HOUR - BEGGINING_HOUR) * 2) + 1;
+		LocalTime[] timeArray = new LocalTime[sizeOfArray];
+		for (int i = 0; i < sizeOfArray; i++) {
+			timeArray[i] = timeStartLocal;
+			timeStartLocal = timeStartLocal.plusMinutes(MINUTES);
+		}
+
+		// Find current dentist working at office
+		DentistManager dentistManager = new DentistManager();
+		Dentist dentist = dentistManager.getFirstDentist();
+
+		int i = 0;
+		int deletionIndex = -1;
+		LocalTime timeEndLocal;
+		// Since we are working with 2 values from array, always -1 of length
+		while (i < (timeArray.length - 1)) {
+			// Convert both times to their SQL representatives
+			timeStartLocal = timeArray[i];
+			timeEndLocal = timeArray[i + 1];
+			Time timeStart = new Time(timeStartLocal.getHour(), timeStartLocal.getMinute(), 0);
+			Time timeEnd = new Time(timeEndLocal.getHour(), timeEndLocal.getMinute(), 0);
+			// Create default appointment
+			Appointment currentAppointment = new Appointment(date, MINUTES, timeEnd, timeStart, dentist);
+			// If an appointment with specific time already existed in database, add it to
+			// the list being made
+			for (int j = 0; j < currentAppointmentsForDate.size(); j++) {
+				if (currentAppointmentsForDate.get(j).getTimeStart().toLocalTime().equals(timeStartLocal)) {
+					deletionIndex = j;
+					// If its length is double, increase i to move accordingly
+					if (currentAppointmentsForDate.get(j).getLength() == (MINUTES * 2)) {
+						i++;
+					}
+					break;
+				}
+			}
+			// Remove it from list to save a bit of time and resources
+			if (deletionIndex != -1) {
+				currentAppointment = currentAppointmentsForDate.remove(deletionIndex);
+				deletionIndex = -1;
+			}
+			listWithAllAppointments.add(currentAppointment);
+			i++;
+		}
+
+		return listWithAllAppointments;
+	}
+
+	public Object[] makeAnAppointment(int length, String reasonForVisit, Patient patient, int appointmentListIndex,
+			List<Appointment> appointmentsList) {
+		Appointment appointment = appointmentsList.get(appointmentListIndex);
+		if (length == (MINUTES * 2)) {
+			// If we are at last possible appointment time (ex. 16:30 and office closes at
+			// 17:00) or next appointment has a patient, we can't make an appointment with
+			// length of 60
+			if ((appointmentListIndex + 1) > appointmentsList.size()
+					|| appointmentsList.get(appointmentListIndex + 1).getPatient() != null) {
+				return new Object[] { false, appointmentsList };
+			} else {
+				// Change length and remove next appointment of half an hour
+				// Also set appropriate timeEnd that we got from deleted appointment
+				appointment.setLength(length);
+				Time timeEnd = appointmentsList.remove(appointmentListIndex + 1).getTimeEnd();
+				appointment.setTimeEnd(timeEnd);
+			}
+		}
+		// Default settings that work both for 30/60
+		appointment.setDescription(reasonForVisit);
+		appointment.setPatient(patient);
+		// If update succeeded, return list with persisted object in it
+		Appointment persistedAppointment = appointmentManager.addAppointment(appointment);
+		if (persistedAppointment != null) {
+			appointmentsList.set(appointmentListIndex, persistedAppointment);
+			return new Object[] { true, appointmentsList };
+		} else {
+			return new Object[] { false, appointmentsList };
+		}
+	}
+
+	public Object[] removeAnAppointmentFromListOfLists(List<List<Appointment>> listOfAppointmentsForDates,
+			int innerCounter, int outerCounter) {
+		List<Appointment> appointmentsList = listOfAppointmentsForDates.get(outerCounter);
+		Appointment deletionAppointment = appointmentsList.get(innerCounter);
+		Dentist dentist = deletionAppointment.getDentist();
+		Time timeStart = deletionAppointment.getTimeStart();
+		Time timeEnd = deletionAppointment.getTimeEnd();
+		// Usual different approach to deletion if length is 60 minutes
+		if (deletionAppointment.getLength() == (MINUTES * 2)) {
+
+		} else {
+
+		}
+		return null;
+	}
+
+}
