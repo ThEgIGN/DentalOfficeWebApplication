@@ -18,7 +18,7 @@ time appointment is either made or canceled.
 [Youtube video](https://youtu.be/Z-rcugL_DSo)
 
 ### Some notes
-1. I HIGHLY reccomend you turn off e-mail sending for testing (disable EmailUtility class), 
+1. I HIGHLY recommend you turn off e-mail sending for testing (disable EmailUtility class), 
 because it's so slow and Google probably doesn't like that much spamming
 2. DentalOfficeSQLScript.sql can be used to generate tables required. Dentist HAS to be 
 manually added, but patients and appointments can be added through application
